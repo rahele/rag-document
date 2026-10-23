@@ -1,34 +1,3 @@
-# RAG Document Q&A
-
-A production-style Retrieval-Augmented Generation (RAG) API that allows users to ask questions against their own documents. Built with **FastAPI**, **Anthropic Claude**, **OpenAI embeddings**, and **ChromaDB**.
-
-## Architecture
-
-```
-User question
-     │
-     ▼
-FastAPI /ask endpoint
-     │
-     ▼
-ChromaDB (semantic search over embedded document chunks)
-     │  returns top-k relevant chunks
-     ▼
-Anthropic Claude API (answer grounded in retrieved context)
-     │
-     ▼
-Response: answer + sources + token usage
-```
-
-## Features
-
-- **Document ingestion**: Load `.txt` files, split into chunks, embed and store in ChromaDB
-- **Semantic retrieval**: Query ChromaDB for the most relevant chunks given a user question
-- **Grounded answers**: Claude answers strictly from retrieved context — no hallucination from general knowledge
-- **Source attribution**: Every answer includes which documents and chunks were used
-- **Token tracking**: Input/output token counts returned per request
-- **Input validation**: Pydantic models enforce request structure
-- **Test coverage**: Unit and integration tests with mocked external dependencies
 
 ## Setup
 
@@ -92,11 +61,3 @@ Ask a question against the ingested documents.
 ```bash
 pytest tests/ -v
 ```
-
-## Design Decisions
-
-- **Chunking strategy**: `RecursiveCharacterTextSplitter` with 800-token chunks and 100-token overlap preserves sentence and paragraph boundaries
-- **Embeddings**: OpenAI `text-embedding-3-small` — fast and cost-effective for document search
-- **LLM**: Anthropic Claude with a strict system prompt that prevents answers outside the provided context
-- **Upsert**: Documents are upserted (not inserted) so re-ingestion is safe and idempotent
-- **Source IDs**: Chunk IDs are deterministic (MD5 of filepath + chunk index) enabling reliable upsert
